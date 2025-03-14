@@ -17,4 +17,16 @@ def get_transactions():
 @transactions_bp.route("/", methods=["POST"])
 def add_transaction():
     data = request.json
-    if not data or "user_id" in data or "category_id" in data
+    if not data or "user_id" not in data or "category_id" not in data or "amount" not in data:
+        return jsonify({"error": "Missing required fields"}), 400
+    
+    transaction_id = mongo.db.transactions.insert_one({
+        "user_id": ObjectId(data["user_id"]), 
+        "category_id": ObjectId(data["category_id"]),
+        "amount": data["amount"],
+        "description": data.get("description", ""),
+        "date": data["data"]
+    }).inserted_id
+
+    return jsonify({"message": "Transaction added", "id": str(transaction_id)}), 201
+        

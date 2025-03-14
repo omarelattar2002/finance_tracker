@@ -9,10 +9,11 @@ def create_app():
     # Initialize MongoDB
     mongo.init_app(app)
 
-    # Import and register Blueprints (routes)
-    from backend.routes.users import users_bp
-    from backend.routes.budgets import budgets_bp
-    from backend.routes.transactions import transactions_bp
+    from .users import users_bp
+    from .budgets import budgets_bp
+    from .transactions import transactions_bp
+
+
 
     app.register_blueprint(users_bp, url_prefix="/users")
     app.register_blueprint(budgets_bp, url_prefix="/budgets")
