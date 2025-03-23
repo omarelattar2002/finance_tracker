@@ -1,37 +1,35 @@
 from dotenv import load_dotenv
-from flask import Flask, jsonify
-from pymongo import MongoClient
+from flask import Flask, jsonify, request
 import os
 import boto3
-from boto3.dynamodb.types import TypeDeserializer, TypeSerializer
-from boto3.dynamodb.conditions import Key
-
-
+from routes.transactions import transactions_bp, init_table
 
 load_dotenv()
+
 aws_access_key = os.environ["aws_access_key"]
 aws_secret_access_key = os.environ["aws_secret_access_key"]
-session = boto3.Session(aws_access_key_id = aws_access_key, aws_secret_access_key = aws_secret_access_key, region_name="us-east-1")
+
+session = boto3.Session(
+    aws_access_key_id=aws_access_key,
+    aws_secret_access_key=aws_secret_access_key,
+    region_name="us-east-1"
+)
+
 dynamodb = session.resource("dynamodb")
+table = dynamodb.Table("finance_tracker")
+init_table(table)
+
 app = Flask(__name__)
 
-
-
-table = dynamodb.Table("table_test")
-
-
-# def dynamo_to_python(dynamo_objects: list) -> list:
-#     deserializer = TypeDeserializer()
-#     return [
-#         {k: deserializer.deserialize(v) for k, v in item.items()}
-#         for item in dynamo_objects if isinstance(item, dict) and item
-#     ]
+from routes.transactions import transactions_bp
+app.register_blueprint(transactions_bp)
 
 @app.route("/")
 def home():
     data = table.scan()
-    json_data = (data["Items"])
-    return json_data
+    return jsonify(data["Items"])
+
+
 
 
 if __name__ == "__main__":
